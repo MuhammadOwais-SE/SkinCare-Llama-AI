@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Camera, Send, Loader2, Settings, PlusCircle } from 'lucide-react';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -32,25 +33,26 @@ const SkinCareAI = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle image upload and set preview
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setImagePreview(e.target.result);
-      reader.readAsDataURL(file);
+      setImagePreview(file);  // Store the file object instead of base64 string
     }
   };
 
-  const handleSendMessage = () => {
+  // Handle sending message and making API request
+  const handleSendMessage = async () => {
     if (message.trim() || imagePreview) {
       const newMessage = {
         id: Date.now(),
         text: message,
-        image: imagePreview,
+        image: imagePreview ? URL.createObjectURL(imagePreview) : null, // Display image preview
         sender: 'user',
         timestamp: new Date().toISOString()
       };
 
+      // Update the conversation with the new message
       setConversations(prev => 
         prev.map(conv => 
           conv.id === activeConversation
@@ -61,29 +63,51 @@ const SkinCareAI = () => {
 
       setMessage('');
       setImagePreview(null);
-      simulateResponse();
+      setIsLoading(true);
+
+      // Prepare FormData for API request
+      const formData = new FormData();
+      formData.append('prompt_text', message);
+      if (imagePreview) {
+        formData.append('image', imagePreview); // Send the file object
+      }
+
+      try {
+        // Send the form data to the backend (Gemini API)
+        const response = await axios.post('http://localhost:8000/api/skin-care-suggestions/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        // Log the full response to debug
+        console.log('AI Response:', response.data); // Check if the response contains 'suggestions' or an error
+
+        if (response.data && response.data.suggestions) {
+          const aiResponse = {
+            id: Date.now(),
+            text: response.data.suggestions, // Use the suggestions from the response
+            sender: 'ai',
+            timestamp: new Date().toISOString()
+          };
+
+          // Add the AI response to the active conversation
+          setConversations(prev => 
+            prev.map(conv => 
+              conv.id === activeConversation
+                ? { ...conv, messages: [...conv.messages, aiResponse] }
+                : conv
+            )
+          );
+        } else {
+          console.error('No suggestions found in the response');
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  };
-
-  const simulateResponse = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const aiResponse = {
-        id: Date.now(),
-        text: "I've analyzed your skin concern. Based on the image and description, I recommend...",
-        sender: 'ai',
-        timestamp: new Date().toISOString()
-      };
-
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === activeConversation
-            ? { ...conv, messages: [...conv.messages, aiResponse] }
-            : conv
-        )
-      );
-      setIsLoading(false);
-    }, 1500);
   };
 
   return (
@@ -188,7 +212,7 @@ const SkinCareAI = () => {
             {imagePreview && (
               <div className="mb-3">
                 <img
-                  src={imagePreview}
+                  src={URL.createObjectURL(imagePreview)}  // Preview the selected image
                   alt="Preview"
                   className="h-20 rounded-lg"
                 />
@@ -229,4 +253,3 @@ const SkinCareAI = () => {
 };
 
 export default SkinCareAI;
-

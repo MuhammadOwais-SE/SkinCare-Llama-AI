@@ -14,14 +14,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# skin_care_project/urls.py
 from django.contrib import admin
 from django.urls import path
+from skin_care import views  # Add this import for views
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Add your other URL patterns here
+    path('', views.home, name='home'),  # This should map the root URL to the home view
 ]
 
 if settings.DEBUG:

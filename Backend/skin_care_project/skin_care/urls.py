@@ -1,8 +1,12 @@
-from django.urls import path
-from . import views
-from django.conf import settings
+# skin_care_project/urls.py
 
+from django.contrib import admin
+from django.urls import path
+from skin_care import views  # Make sure this import is correct
 
 urlpatterns = [
-    path('suggestions/', views.skin_care_suggestion, name='skin_care_suggestion'),
+    path('admin/', admin.site.urls),
+    path('', views.home, name='home'),  # Root URL mapped to home view
+    path('api/skin-care-suggestions/', skin_care_suggestion, name='skin_care_suggestions'),  # API route
+
 ]
