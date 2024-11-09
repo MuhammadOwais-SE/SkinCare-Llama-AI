@@ -1,0 +1,12 @@
+# Django
+*.pyc
+__pycache__/
+django-env/                # Virtual environment
+
+# React
+node_modules/
+build/
+.env                       # Environment variables
+
+# General
+.DS_Store
