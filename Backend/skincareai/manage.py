@@ -6,7 +6,6 @@ import sys
 
 def main():
     """Run administrative tasks."""
-
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skincareai.settings')
 
     try:
@@ -20,5 +19,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "_main_":
     main()

@@ -3,15 +3,12 @@ import axios from 'axios';
 import { Camera, Send, Loader2, Settings, PlusCircle } from 'lucide-react';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-// import { Separator } from "./ui/separator";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
 import {
   Card,
   CardContent,
-  // CardDescription,
-  // CardFooter,
   CardHeader,
   CardTitle,
 } from "./ui/card";
