@@ -1,6 +1,6 @@
+# api/apps.py
 from django.apps import AppConfig
 
-
-class SkinCareConfig(AppConfig):
+class ApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'skin_care'
+    name = 'api'  # Matches the folder name for the app
