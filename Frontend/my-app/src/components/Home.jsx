@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Camera, Send, Loader2, Settings, PlusCircle } from 'lucide-react';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Separator } from "./ui/separator";
+// import { Separator } from "./ui/separator";
 import { ScrollArea } from "./ui/scroll-area";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
+  // CardDescription,
+  // CardFooter,
   CardHeader,
   CardTitle,
 } from "./ui/card";
