@@ -1,4 +1,5 @@
 """
+<<<<<<<< HEAD:Backend/skincareai/skincareai/wsgi.py
 WSGI config for skincareai project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
