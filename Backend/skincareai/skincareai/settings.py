@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',  # API app (referencing correctly)
     'rest_framework',
     'corsheaders',
+    # 'posts',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +50,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # Add this line
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React's default port
 ]
 
 ROOT_URLCONF = 'skincareai.urls'

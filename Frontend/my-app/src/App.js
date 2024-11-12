@@ -1,17 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import './App.css';
+import axios from 'axios';
 
 function App() {
+
+    // const [refresh, setRefresh] = useState(false) //First Method
+    const [messages, setMessages] = useState([]); //second method
+    // console.log('refresh..')
+
+    // Testing the end points
+    const endpoint = `${process.env.REACT_APP_API_URL}/messages/`;
+    const fetch_Data = async () => {
+        console.log('fetching...');
+        try {
+            const response = await axios.get(endpoint);
+            console.log(response);
+            const { data } = response;
+            console.log(data);
+            return data;
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+    const post_Data = async () => {
+        const message_text = 'Hello there, Posting Data';
+        const is_ai_response = false;
+        const body = { message_text, is_ai_response }; // Match Django model field names
+        const response = await axios.post(endpoint, body);
+        console.log(response);
+        return response.data;
+    };
+    
+
+    const handleSendData = async() => {
+        const newData = await post_Data()
+        //... some logic to add data
+        if (newData) {
+            setMessages(prevState => [...prevState, newData])
+            // setRefresh(prevState => !prevState) //First method
+        }
+    }
+
+    useEffect(() => {
+        //interactions with external world
+        fetch_Data()
+    }, []) 
+    //refresh        //set the dependency 
+
     const [activeTab, setActiveTab] = useState('Skin Analysis');
-    const [messages, setMessages] = useState([]);
+    // const [messages, setMessages] = useState([]);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
         setMessages([]); // Clear messages when switching tabs
     };
 
-    const sendMessage = (e) => {
+    const sendMessage = async (e) => {
         e.preventDefault();
+        //for testing
+        try {
+            // Call handleSendData, which calls post_Data internally
+            await handleSendData();
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+
         const userInput = e.target.message.value;
 
         if (userInput.trim()) {
