@@ -24,12 +24,14 @@ class Conversation(models.Model):
 
 class Message(models.Model):
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    # conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
-    # user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="messages")
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages", null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="messages", null=True)  # Temporarily made nullable
     message_text = models.TextField()
     is_ai_response = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to="messages/", blank=True, null=True)
 
     def __str__(self):
         sender = "AI" if self.is_ai_response else "User"
         return f"{sender} message in Conversation {self.conversation.conversation_id}"
+

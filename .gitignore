@@ -1,7 +1,7 @@
 # Django
 *.pyc
+django-env/              
 __pycache__/
-django-env/                # Virtual environment
 
 # React
 node_modules/
