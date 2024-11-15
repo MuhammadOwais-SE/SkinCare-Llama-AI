@@ -3,6 +3,7 @@ import './App.css';
 import axios from 'axios';
 
 function App() {
+    console.log("API URL:", process.env.REACT_APP_API_URL);
 
     // const [refresh, setRefresh] = useState(false) //First Method
     const [messages, setMessages] = useState([]); //second method
@@ -15,13 +16,13 @@ function App() {
         try {
             const response = await axios.get(endpoint);
             console.log(response);
-            const { data } = response;
-            console.log(data);
-            return data;
+            setMessages(response.data); // Assuming `response.data` is an array of messages
         } catch (error) {
-            console.error("Error fetching data:", error);
+            console.error("Error fetching data:", error.message || error);
+            alert("Failed to fetch data. Please check the console for details.");
         }
     };
+    
 
     const post_Data = async () => {
         const message_text = 'Hello there, Posting Data';

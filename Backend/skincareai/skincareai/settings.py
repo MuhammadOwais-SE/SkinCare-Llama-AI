@@ -52,9 +52,12 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Add this line
 ]
 
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React's default port
+    "http://localhost:3000", # React's default por
+    "http://127.0.0.1:3000",
 ]
+
 
 ROOT_URLCONF = 'skincareai.urls'
 WSGI_APPLICATION = 'skincareai.wsgi.application'
@@ -123,3 +126,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # My Gemini API Key
 GEMINI_API_KEY = "AIzaSyBsYPUdgw9b5bShvjF2gUCXMpGUKixR4LQ"
+
+
+#  ((CHATGPT CORRECTED))
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
