@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { Camera, Send, Loader2, Settings, PlusCircle, Trash2, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { Camera, Send, Loader2, Settings, PlusCircle, Trash2, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -64,7 +64,7 @@ const SkinCareAI = () => {
         });
         return;
       }
-      
+
       if (!file.type.startsWith('image/')) {
         toast({
           title: "Invalid file type",
@@ -73,7 +73,7 @@ const SkinCareAI = () => {
         });
         return;
       }
-      
+
       setImagePreview(file);
     }
   };
@@ -98,98 +98,80 @@ const SkinCareAI = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!message.trim() && !imagePreview) return;
-    
+    if (!message.trim() && !imagePreview) return; // Do nothing if both message and image are empty
+
     try {
-      setIsLoading(true);
-      
-      // Create new message object
-      const newMessage = {
-        id: Date.now(),
-        text: message,
-        image: imagePreview ? URL.createObjectURL(imagePreview) : null,
-        sender: 'user',
-        timestamp: new Date().toISOString()
-      };
+        setIsLoading(true);
 
-      // Update UI with user message
-      setConversations(prev =>
-        prev.map(conv =>
-          conv.id === activeConversation
-            ? { ...conv, messages: [...conv.messages, newMessage] }
-            : conv
-        )
-      );
-
-      // Prepare form data
-      const formData = new FormData();
-      formData.append('message', message);  // Changed from 'prompt_text' to 'message'
-      formData.append('conversation_id', activeConversation);
-      if (imagePreview) {
-        formData.append('image', imagePreview);
-      }
-
-      // Make API request
-      const response = await axios.post(
-        'http://localhost:8000/api/messages/',
-        formData,
-        {
-          headers: { 
-            'Content-Type': 'multipart/form-data',
-            // Add any required authentication headers here
-          },
-        }
-      );
-
-      // Handle API response
-      if (response.data) {
-        // Assuming your Django backend returns a response with AI message
-        const aiResponse = {
-          id: Date.now() + 1,
-          text: response.data.response || response.data.message, // Handle both possible response formats
-          sender: 'ai',
-          timestamp: new Date().toISOString()
+        // Create new user message
+        const newMessage = {
+            id: Date.now(),
+            text: message,
+            image: imagePreview ? URL.createObjectURL(imagePreview) : null,
+            sender: "user",
+            timestamp: new Date().toISOString(),
         };
 
-        setConversations(prev =>
-          prev.map(conv =>
-            conv.id === activeConversation
-              ? { ...conv, messages: [...conv.messages, aiResponse] }
-              : conv
-          )
+        // Update UI with user message
+        setConversations((prev) =>
+            prev.map((conv) =>
+                conv.id === activeConversation
+                    ? { ...conv, messages: [...conv.messages, newMessage] }
+                    : conv
+            )
         );
-      }
 
-      // Clear input states
-      setMessage('');
-      setImagePreview(null);
-      
+        // Prepare form data to send to the backend
+        const formData = new FormData();
+        formData.append("message", message); // User message
+        formData.append("conversation_id", activeConversation); // Active conversation ID
+        if (imagePreview) {
+            formData.append("image", imagePreview); // Optional image file
+        }
+
+        // Send data to the backend
+        const response = await axios.post(
+            "http://localhost:8000/api/messages/", // Your backend URL
+            formData,
+            { 
+                headers: { 
+                    "Content-Type": "multipart/form-data" // This is crucial for file uploads
+                }
+            }
+        );
+
+        // Handle AI response
+        if (response.data) {
+            const aiResponse = {
+                id: Date.now() + 1,
+                text: response.data.message, // Display AI's response
+                sender: "ai",
+                timestamp: new Date().toISOString(),
+            };
+
+            setConversations((prev) =>
+                prev.map((conv) =>
+                    conv.id === activeConversation
+                        ? { ...conv, messages: [...conv.messages, aiResponse] }
+                        : conv
+                )
+            );
+        }
+
+        // Clear input states
+        setMessage("");
+        setImagePreview(null);
     } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.error || "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-      
-      const errorMessage = {
-        id: Date.now(),
-        text: 'Sorry, there was an error processing your request. Please try again.',
-        sender: 'ai',
-        timestamp: new Date().toISOString()
-      };
-      
-      setConversations(prev =>
-        prev.map(conv =>
-          conv.id === activeConversation
-            ? { ...conv, messages: [...conv.messages, errorMessage] }
-            : conv
-        )
-      );
+        console.error("Error:", error);
+        toast({
+            title: "Error",
+            description: error.response?.data?.error || "Failed to send message. Please try again.",
+            variant: "destructive",
+        });
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   return (
     <div className="flex h-screen bg-background">
@@ -219,7 +201,7 @@ const SkinCareAI = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
+
           {/* New Chat Dialog */}
           <AlertDialog>
             <AlertDialogTrigger asChild>

@@ -1,35 +1,38 @@
-import google.generativeai as genai
+import requests
 from django.conf import settings
 
-# Configure the Gemini API key
-genai.configure(api_key=settings.GEMINI_API_KEY)
-
-# Create the model and configure the generation parameters
-generation_config = {
-    "temperature": 1,
-    "top_p": 0.95,
-    "top_k": 40,
-    "max_output_tokens": 8192,
-    "response_mime_type": "text/plain",
-}
-
-def fetch_gemini_data(prompt):
+def fetch_gemini_data(prompt, image_file=None):
     try:
-        # Initialize the generative model (Gemini 1.5)
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=generation_config,
+        # URL of the Gemini API (replace with the actual endpoint)
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
+
+        # Prepare data for the request
+        data = {
+            "contents": [{"parts": [{"text": prompt}]}]
+        }
+
+        # If there's an image file, send it along with the request
+        files = {}
+        if image_file:
+            files = {"image": image_file}
+
+        # Send request to Gemini API with the API key in the query parameters
+        response = requests.post(
+            url,
+            json=data,  # Send the prompt data as JSON
+            files=files,  # Attach any image file if provided
+            params={"key": settings.GEMINI_API_KEY}  # Include the API key as query parameter
         )
-        
-        # Start a chat session
-        chat_session = model.start_chat(history=[])
-        
-        # Send the prompt message to the model and get the response
-        response = chat_session.send_message(prompt)
-        
-        # Return the response text (or handle it based on your needs)
-        return response.text
+
+        # Check if the response is successful
+        if response.status_code == 200:
+            response_data = response.json()
+            # Retrieve AI's response from the API
+            ai_response = response_data.get("content", [{}])[0].get("parts", [{}])[0].get("text", "No analysis available.")
+            return ai_response
+        else:
+            return f"Error from Gemini API: {response.status_code}"
 
     except Exception as e:
-        print(f"Error interacting with Gemini API: {e}")
-        return None
+        print(f"Error calling Gemini API: {e}")
+        return "Error calling Gemini API"

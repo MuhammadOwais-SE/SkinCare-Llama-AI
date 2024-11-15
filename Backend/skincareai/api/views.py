@@ -1,78 +1,84 @@
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, parser_classes
-from django.shortcuts import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser
 from .services import fetch_gemini_data
-from .models import Message, Conversation
+from .models import Conversation, Message
+from uuid import UUID
 import logging
 
-# Set up logging
 logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
 def create_message(request):
     try:
-        # Extract data from request
-        prompt_text = request.data.get('message', '')  # Changed from 'prompt_text' to match frontend
-        image_file = request.FILES.get('image')
-        conversation_id = request.data.get('conversation_id')
-        
+        # Extract data from the request
+        prompt_text = request.data.get('message', '')  # The message text
+        image_file = request.FILES.get('image')  # Optional image from the user
+        conversation_id = request.data.get('conversation_id')  # ID of the current conversation
+
         logger.info(f"Received request - Text: {prompt_text}, Image: {bool(image_file)}, Conversation: {conversation_id}")
-        
-        # Validate input
+
+        # Validate input: either message or image is required
         if not prompt_text and not image_file:
             return Response({
                 "message": "Either message text or image is required",
                 "status": "error"
             }, status=400)
-            
-        # Get or create conversation
+
+        # Convert conversation_id to UUID (if not already)
         try:
-            conversation = Conversation.objects.get(id=conversation_id)  # Changed from conversation_id to id
+            conversation_id = UUID(conversation_id)  # Convert to UUID if it's a valid UUID string
+            logger.info(f"Converted conversation_id: {conversation_id}")
+        except ValueError:
+            logger.error(f"Invalid conversation_id format: {conversation_id}")
+            return Response({
+                "message": "Invalid conversation_id format",
+                "status": "error"
+            }, status=400)
+
+        # Get the conversation object
+        try:
+            conversation = Conversation.objects.get(conversation_id=conversation_id)
+            logger.info(f"Found conversation: {conversation}")
         except Conversation.DoesNotExist:
-            conversation = Conversation.objects.create(id=conversation_id)
-        
-        # Create user message
+            logger.error(f"Conversation with ID {conversation_id} not found.")
+            return Response({
+                "message": "Conversation not found",
+                "status": "error"
+            }, status=404)
+
+        # Create a user message in the database
         user_message = Message.objects.create(
             conversation=conversation,
-            user=request.user if request.user.is_authenticated else None,  # Handle anonymous users
+            user=None,  # Can be None if authentication is not used
             message_text=prompt_text,
             is_ai_response=False,
             image=image_file
         )
-        
+
         logger.info(f"Created user message with ID: {user_message.id}")
 
-        # Construct prompt based on context
-        if image_file:
-            context_prompt = (
-                "You are a skincare AI assistant. Analyze the uploaded skin image and provide detailed "
-                "observations about skin conditions, potential concerns, and recommendations. "
-                f"User's question: {prompt_text}"
-            )
-        else:
-            context_prompt = (
-                "You are a skincare AI assistant. Provide helpful advice and recommendations "
-                f"for the following question: {prompt_text}"
-            )
+        # Construct the prompt for AI based on the input
+        context_prompt = (
+            "You are a skincare AI assistant. "
+            f"Provide helpful advice for the following question: {prompt_text}"
+        )
 
-        # Get AI response
+        # Fetch AI response using Gemini
         ai_response = fetch_gemini_data(context_prompt, image_file)
-        
-        logger.info("Received AI response")
 
         if ai_response:
-            # Save AI response
+            # Save AI response to the database
             ai_message = Message.objects.create(
                 conversation=conversation,
-                user=request.user if request.user.is_authenticated else None,
+                user=None,  # Can be None if authentication is not used
                 message_text=ai_response,
                 is_ai_response=True
             )
-            
+
             logger.info(f"Created AI message with ID: {ai_message.id}")
-            
+
             return Response({
                 "message": ai_response,
                 "status": "success",
@@ -84,11 +90,11 @@ def create_message(request):
                 "message": "Failed to get AI response",
                 "status": "error"
             }, status=400)
-            
+
     except Exception as e:
         logger.error(f"Error in create_message: {str(e)}", exc_info=True)
         return Response({
             "message": "An error occurred processing your request",
             "status": "error",
-            "detail": str(e) if settings.DEBUG else "Internal server error"
+            "detail": str(e)
         }, status=500)
