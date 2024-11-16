@@ -4,5 +4,4 @@ from .models import Message
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ('message_id', 'message_text', 'is_ai_response', 'created_at')  # 'conversation', 'user',
-        
+        fields = ('message_id', 'message_text', 'is_ai_response', 'created_at', 'image')  # Add 'image'

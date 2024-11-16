@@ -3,6 +3,11 @@ from django.conf import settings
 
 # Configure the Gemini API key
 genai.configure(api_key=settings.GEMINI_API_KEY)
+# Add this test function in service.py
+def test_import():
+    return "Import successful!"
+
+# Try to import it in the shell
 
 # Create the model and configure the generation parameters
 generation_config = {
@@ -21,6 +26,7 @@ def fetch_gemini_data(prompt):
             generation_config=generation_config,
         )
         
+        
         # Start a chat session
         chat_session = model.start_chat(history=[])
         
@@ -32,4 +38,4 @@ def fetch_gemini_data(prompt):
 
     except Exception as e:
         print(f"Error interacting with Gemini API: {e}")
-        return None
+        return None, str(e)
